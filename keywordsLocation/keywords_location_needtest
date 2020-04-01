@@ -1,0 +1,109 @@
+import pymysql
+import nltk
+import csv
+import re
+import nltk.data
+from nltk.tokenize import WordPunctTokenizer
+imort matplotlib.pylot as plt
+
+id = []
+abstract = []
+keywords = []
+
+with open("F:\\acm_data\abstract_keyword.csv",'r',encoding='utf-8') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        if(row[4]!='[]')
+        id.append(row[0])
+        keywords.append(row[4])
+
+keywords.remove('keywords')
+id.pop(0)                                           //?????
+
+conn=pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='irlab',db='acm_acm_article',use_unicode = True,charset = 'utf8')
+cur=conn.cursor()
+
+for i in range(len(id)):
+    cur.execute('select  art_abstract from acm_article where article_id = "'+id[i]+'"')
+    r=cur.fetchall()
+    for r1 in r:
+        abstract.append(r1[0])
+
+
+for i in range(len(keywords)):
+    keywords[i] = re.findall(r'\[(.+?)\]',keywords[i])
+    keywords[i] = keywords[i][0].split(',')
+    for j in range(len(keywords[i])):
+        keywords[i][j] = keywords[i][j].replace('\'','')
+
+
+
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+loc = []
+
+
+for i in range(len(abstract)):
+    wordslist = []
+    sentences = tokenizer.tokenize(abstract[i])
+    for s in sentences:
+        words = WordPunctTokenizer().tokenize(s)
+        wordslist.extend(words)
+    location = 0
+    count = 0
+    for j in range(len(keywords[i])):
+        for k in range(len(wordslist)):
+            if keyowrds[i][j]==wordslist[k]:
+                location = location + k
+                count = count + 1
+    loc[i] = (location/len(wordslist))/count
+
+header = ['article_id','keywords_location']
+with open("F:\\acm_data\\keywords_location.csv","a+",encoding= 'utf-8',newline='') as csvfile:
+    csvwriter = csv.writer(csvfile)
+    csvwriter.writerow(header)
+    csvwriter.writerows(zip(id,loc))
+csvfile.close()
+
+x = []
+for i in range(len(abstract)):
+    x[i] = i+1
+plt.plot(x,loc)
+plt.title('Position of keywords in Abstracts')
+plt.xlabel('abstract')
+plt.ylabel('position')
+plt.show()
+plt.savefig("F:\\acm_data\\keywords_location_linechart.png")
+
+
+p=[0,0,0,0,0,0]
+
+for i in loc:
+    if i == 0:
+        p[0] = p[0]+1
+    elif i - 0.25 <=0:
+        p[1] = p[1]+1
+    elif i - 0.5 <=0:
+        p[2] = p[2]+1
+    elif i - 0.75 <=0:
+        p[3] = p[3]+1
+    elif i - 1 <0:
+        p[4] = p[4]+1
+    else:
+        p[5] = p[5]+1
+
+labels = 'p=0','(0,0.25]','(0.25,0.5]','(0.5,0.75]','(0.75,1)','p=1'
+size = [p[0],p[1],p[2],p[3],p[4],p[5]]
+colors = ['yellowgreen', 'gold', 'lightskyblue', 'lightcoral','purple']
+explode = (0.1, 0, 0, 0,0,0.1)
+plt.pie(size, explode=explode, labels=labels, colors=colors,
+  autopct='%1.1f%%', shadow=True, startangle=90)
+plt.axis('equal')
+plt.savefig("F:\\acm_data\\keywords_location_pie.png")
+plt.show()
+
+
+
+
+
+    
+
